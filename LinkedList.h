@@ -60,10 +60,10 @@ void llf_append(LinkedListf* linked_list, float value)
     linked_list->count++; 
 }
 
-void llf_insert_at(LinkedListf* linked_list, int index, float value)
+int llf_insert_at(LinkedListf* linked_list, int index, float value)
 {
-    if(index<0 || index>count)
-        return;
+    if(index<0 || index>linked_list->count)
+        return -1;
      // find empty position
     int _i = 0;
     for( ; _i<linked_list->allocation_length; _i++)
@@ -72,46 +72,46 @@ void llf_insert_at(LinkedListf* linked_list, int index, float value)
             break;
     }
     
+    if(_i == linked_list->allocation_length) // not enough room in list to store value
+        return -1;
+    linked_list->values[_i] = value;
+     
     if(index == 0)// by definition , index 0 means linked_list->start 
     {
         if(linked_list->count == 1)
         {
-            linked_list->links[linked_list->start] = -1;
-            linked_list->start = -1;
+            int prev_start = linked_list->start;
+            linked_list->links[_i] = prev_start;
+            linked_list->start = _i;
+            linked_list->end = prev_start; 
         }
         else
         {
-            int _target = linked_list->links[linked_list->start];
-            linked_list->links[linked_list->start] = -1;
-            linked_list->start = _target;
+            linked_list->links[_i] = linked_list->start;
+            linked_list->start = _i;
         }
-        linked_list->count--;
+        linked_list->count++;
         return 1; 
      }
 
-    _i = linked_list->start;
+    int _j = linked_list->start;
     int _cur_index = 0; 
     while(1)
     {
-       // printf("%d \n", _cur_index);
         if(_cur_index+1 == index)
         {
-            int _i_next =  linked_list->links[linked_list->links[_i]];
-            if(linked_list->end == linked_list->links[_i])
-                linked_list->end = _i;
-            linked_list->links[_i] = _i_next;
-            linked_list->count--;
+            linked_list->links[_i] = linked_list->links[_j]; 
+            linked_list->links[_j] = _i;
+            if(linked_list->end == _j)
+                linked_list->end = _i; 
+            linked_list->count++;
             return 1; 
         }
         _cur_index++; 
-        if(_i == linked_list->end)
+        if(_j == linked_list->end)
             break;
-         _i = linked_list->links[_i];
+         _j = linked_list->links[_j];
     }
-
-
-    
-
 }
 
 //remove item
@@ -132,6 +132,7 @@ int llf_remove_at(LinkedListf* linked_list, int index)
         {
             linked_list->links[linked_list->start] = -1;
             linked_list->start = -1;
+            linked_list->end = -1;
         }
         else
         {
@@ -166,6 +167,23 @@ int llf_remove_at(LinkedListf* linked_list, int index)
     return -1; 
 }
 
+float llf_get(LinkedListf* linked_list, int index)
+{
+    int _i = linked_list->start;
+    int _cur_index = 0; 
+    while(1)
+    {
+       // printf("%d \n", _cur_index);
+        if(_cur_index == index)
+        {
+            return linked_list->values[_cur_index];
+        }
+        _cur_index++; 
+        if(_i == linked_list->end)
+            break;
+         _i = linked_list->links[_i];
+    }
+}
 
 // print linked list [will change]
 void llf_print(LinkedListf* linked_list)

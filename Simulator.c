@@ -1,15 +1,52 @@
 #include <stdio.h>
-#include "LinkedList.h"
-#include "Dictionary.h"
-#include "Parser.h"
 #include <string.h>
+#include "LinkedList.h"
+#include "Parser.h"
+#include "Utils.h"
+#include "Logger.h"
+#include "MetaData.h"
+#include "Configuration.h"
+
+#define to_string(node) ((char*)(node->value))
+//LinkedListmdb* construct_metadata(char* meta_data_text);
 
 int main(int argc, char *argv[])
 {
+    //construct metadata
+    if(argc>1)
+    {
+        char* config_file_name = argv[1];
+        int len = 0;
+        char** split_text = split(config_file_name, '.', &len);
+        if(strcmp(split_text[1], "conf"))
+        {
+            log_to(LOGMODE_MONITOR,LOGTYPE_ERROR,"Configuration file has unknown extension");  
+            return -1; 
+        }
+        free_split_text(split_text,len); 
+        
+        char* config_file_text = read_file(config_file_name); 
+        Configuration config;
+        construct_configuration(&config,config_file_text); 
+            
+        //construct_metadata("helo : world");   
+
+    }
+    else
+    {
+        log_to(LOGMODE_MONITOR, LOGTYPE_ERROR, "No configuration file specified");
+        return -1; 
+    }
+    return 0; 
+    /*char* file_name = "file.cfg";
+    char* file_content = read_file(file_name);  
+    printf("%s", file_content); 
+    free(file_content);
+    return 0;
+
     LinkedListf linked_list;
     llf_construct(&linked_list, 10);
-
-    //char str[] = "S{begin}0; A{begin}0; P{run}11; M{allocate}2;\
+  */  //char str[] = "S{begin}0; A{begin}0; P{run}11; M{allocate}2;\
  O{monitor}7; I{hard drive}8; I{scanner}8; O{projector}20;\
  P{run}6; O{projector}4; M{block}6;\
  I{keyboard}17; M{block}4; O{projector}8; P{run}5; P{run}5;\
@@ -24,7 +61,7 @@ int main(int argc, char *argv[])
         token_pointer = strtok(NULL,del);
     }*/
     int len = 0;
-    char** splitted = split_string(str, del ,&len);
+    //char** splitted = split_string(str, del ,&len);
     
     /*char* s = "hello   ";
     s = rstrip(s);
@@ -33,15 +70,8 @@ int main(int argc, char *argv[])
     free(s);*/
      
     //return 0; 
-    int _i;
-    for(_i = 0; _i<len; _i++) 
-        printf("%s \n", splitted[_i]);
-    for(_i=0; _i<len; _i++)
-        free(splitted[_i]);
-    free(splitted);    
-    return 0; 
-    // printf("%s \n", tokenised[1]); 
-    llf_append(&linked_list, 1);
+        // printf("%s \n", tokenised[1]); 
+   /* llf_append(&linked_list, 1);
     llf_append(&linked_list, 2);
     llf_append(&linked_list, 3);
     llf_append(&linked_list, 4);
@@ -50,13 +80,13 @@ int main(int argc, char *argv[])
     llf_append(&linked_list, 7);
     llf_append(&linked_list, 8);
     llf_append(&linked_list, 9);
-    llf_append(&linked_list, 10);
+    llf_append(&linked_list, 10);*/
    /* llf_remove_at(&linked_list, 0);  
     llf_remove_at(&linked_list, 0);
     
     llf_insert_at(&linked_list, 0, 33);
     llf_append(&linked_list, 91);
     llf_insert_at(&linked_list, 2, 53);*/
-    printf("value at 6 : %f \n", llf_get(&linked_list, 6));
-    llf_print(&linked_list); 
+   // printf("value at 6 : %f \n", llf_get(&linked_list, 6));
+   // llf_print(&linked_list); 
     }

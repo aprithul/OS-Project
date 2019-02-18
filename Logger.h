@@ -16,8 +16,16 @@ typedef enum
 
 }LogType;
 
+typedef struct
+{
+    LogType type;
+    int line_number;
+    char associated_file_name[128];
+    char log_text[1024];
+}LogMessage;
 
-void log_to(LogMode mode, LogType type, char* log_text);
-
-
+void close_log_fp();
+void log_to(LogMode mode, char* log_text, char* log_file_name);
+void log_detailed_to(LogMode mode, LogType type, int line_number, char* error_in_file, char* log_text, char* log_file_name);
+void print_log_message(LogMode log_mode, char* log_file_name, LogMessage* log_message);
 #endif

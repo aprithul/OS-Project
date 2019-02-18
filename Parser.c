@@ -27,7 +27,7 @@ char* strip(char* str)
 char* make_singly_spaced(char* str)
 {
     int len = strlen(str);
-    char* buffer = (char*)malloc(sizeof(char)*len);
+    char* buffer = (char*)malloc(sizeof(char)*(len+1));
     int _i = 0;
     int _j = 0;
     int flag = 0;
@@ -51,8 +51,9 @@ char* make_singly_spaced(char* str)
     return str;
 }
 
-char** split(const char* str_a, const char del, int* length)
+char** split(const char* str_a, const char* del, int* length)
 {
+    //printf("%s \n", str_a);
     char** tokens = malloc(sizeof(char*));
     
     int _i = 0;
@@ -60,18 +61,20 @@ char** split(const char* str_a, const char del, int* length)
     *length = 0; 
     while(str_a[_i] != '\0')
     {
-        if(str_a[_i] == del)
+        if( char_in_del(del, str_a[_i]))
         {
             if(_i-start > 0)
             {
                 tokens[*length] = malloc( (sizeof(char)*(_i-start))+1);
                 memcpy(tokens[*length], &str_a[start], _i-start);
                 tokens[*length][_i-start] = '\0';
+                //printf("%s\n", tokens[*length]);
                 (*length)++;
 
                 tokens = realloc(tokens, sizeof(char*)*((*length)+1));
             }
-            while(str_a[_i] == del)
+            //while(str_a[_i] == del)
+            while(char_in_del(del, str_a[_i]) )
                 _i++;
             start = _i;
             _i--; 
@@ -81,7 +84,9 @@ char** split(const char* str_a, const char del, int* length)
     if(_i-start > 0)
     { 
         tokens[*length] = malloc( (sizeof(char)*(_i-start))+1);
-        memcpy(tokens[*length], &str_a[start], _i-start);
+        memcpy(tokens[*length], &str_a[start], _i-start+1);
+        if(!strcmp(tokens[*length], "q"))
+            printf("found\n");
         (*length)++; 
     }
  
@@ -91,6 +96,16 @@ char** split(const char* str_a, const char del, int* length)
     //char** tok = strtok(str_a, " "); 
      
     return tokens; 
+}
+
+int char_in_del(const char* del, char c)
+{
+    int len = strlen(del);
+    int _i = 0;
+    for(;_i<len;_i++)
+        if(del[_i] == c)
+            return 1; 
+    return 0;
 }
 
 void free_split_text(char** split_text, int length)

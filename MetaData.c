@@ -17,6 +17,7 @@ LinkedList construct_metadata(char* meta_data_text)
     LinkedList linked_list;
     ll_construct(&linked_list,10);
     int split_length = 0; 
-    char** splitted = split(meta_data_text,':', &split_length);   
+    char del[] = {':'};
+    char** splitted = split(meta_data_text,del, &split_length);   
     return linked_list;
 }

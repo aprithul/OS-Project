@@ -1,6 +1,8 @@
-
 #include "Utils.h"
 #include <stdlib.h>
+
+
+FILE *fp;
 
 void set_value_f(float* array, int count, float value)
 {
@@ -17,12 +19,20 @@ void set_value_i(int* array, int count, int value)
     } 
 }
 
+FILE* write_to_file(char* text, char* file_name, FILE *fp)
+{
+    if(fp == NULL)
+    {
+        fp = fopen(file_name, "a");
+    }
+    fputs(text, fp); 
+    return fp;
+}
 
 char* read_file(char* file_name)
 {
-    int n = 10;
+    int n = 1024;
     char* buffer = (char*)malloc(n*sizeof(char));
-    FILE *fp;
     int read_char_count = 0;
     if(fp = fopen(file_name, "r"))
     {
@@ -45,5 +55,4 @@ char* read_file(char* file_name)
         buffer = NULL;
     
     return buffer;
-
 }

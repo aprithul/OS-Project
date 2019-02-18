@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "LinkedList.h"
 #include "Parser.h"
 #include "Utils.h"
@@ -17,26 +18,34 @@ int main(int argc, char *argv[])
     {
         char* config_file_name = argv[1];
         int len = 0;
-        char** split_text = split(config_file_name, '.', &len);
+        char del[] = {'.'}; 
+        char** split_text = split(config_file_name, del, &len);
         if(strcmp(split_text[1], "conf"))
         {
-            log_to(LOGMODE_MONITOR,LOGTYPE_ERROR,"Configuration file has unknown extension");  
+            log_to(LOGMODE_MONITOR,"ERROR: Configuration file has unknown extension", NULL);  
             return -1; 
         }
         free_split_text(split_text,len); 
         
-        char* config_file_text = read_file(config_file_name); 
         Configuration config;
-        construct_configuration(&config,config_file_text); 
-            
+        if(construct_configuration(&config,config_file_name))
+        {
+            print_config(&config);    
+            if(access(config.md_file_path, F_OK) == -1)
+            {
+                log_to(config.log_target, "Metadata file doesn't exists", config.log_file_path);
+            }
+        }
+                
         //construct_metadata("helo : world");   
 
     }
     else
     {
-        log_to(LOGMODE_MONITOR, LOGTYPE_ERROR, "No configuration file specified");
+        log_to(LOGMODE_MONITOR, "ERROR: No configuration file specified", NULL);
         return -1; 
     }
+    close_log_fp();
     return 0; 
     /*char* file_name = "file.cfg";
     char* file_content = read_file(file_name);  

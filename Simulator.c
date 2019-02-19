@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+//#include "Simulator.h"
 #include "LinkedList.h"
 #include "Parser.h"
 #include "Utils.h"
@@ -10,9 +11,11 @@
 
 #define to_string(node) ((char*)(node->value))
 //LinkedListmdb* construct_metadata(char* meta_data_text);
-
+Configuration config;
 int main(int argc, char *argv[])
 {
+    // will be set to 1 once configuratin is constructed
+    config.constructed = 0;
     //construct metadata
     if(argc>1)
     {
@@ -27,14 +30,17 @@ int main(int argc, char *argv[])
         }
         free_split_text(split_text,len); 
         
-        Configuration config;
-        if(construct_configuration(&config,config_file_name))
+        //Configuration config;
+        int had_error = construct_configuration(&config,config_file_name);
+        print_config(&config); 
+        
+        if(!had_error) 
         {
-            print_config(&config);    
-            if(access(config.md_file_path, F_OK) == -1)
-            {
-                log_to(config.log_target, "Metadata file doesn't exists", config.log_file_path);
-            }
+            config.constructed = 1; 
+            MetaData metadata;
+            had_error = construct_metadata(&metadata,config.md_file_path);
+            //printf("%d:error code \n", had_error);  
+            print_metadata(&config, &metadata);
         }
                 
         //construct_metadata("helo : world");   
@@ -45,6 +51,7 @@ int main(int argc, char *argv[])
         log_to(LOGMODE_MONITOR, "ERROR: No configuration file specified", NULL);
         return -1; 
     }
+    
     close_log_fp();
     return 0; 
     /*char* file_name = "file.cfg";

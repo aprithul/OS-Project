@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-
 char* configuration_keys[] = {
                             "Start Simulator Configuration File",
                             "Version/Phase",
@@ -27,15 +26,17 @@ char* configuration_keys[] = {
 // return -1 if construction fails, return 1 on success
 int construct_configuration(Configuration* config, char* config_file_name)
 {
-    
-    //char buffer[2048]; 
+    int error_found = 0;
+    // start with no error log records aka all error logs are consumed 
+    config->error_log.consumed = 1; 
     char* config_text = read_file(config_file_name);
-    char del[] = {'\n','\0'}; 
-    //split config text into lines 
-    int config_len = 0;
-    char** split_by_new_line = split(config_text, del, &config_len);   
-    if(config_len>0)
+    if(!is_text_whitespace(config_text))
     {
+        char del[] = {'\n','\0'}; 
+        //split config text into lines 
+        int config_len = 0;
+        char** split_by_new_line = split(config_text, del, &config_len);   
+
         int _i = 1;
         for( ; _i<config_len-1; _i++)
         {
@@ -45,8 +46,9 @@ int construct_configuration(Configuration* config, char* config_file_name)
             char** split_by_colon = split(split_by_new_line[_i],col_del , &colon_split_len);
             if(colon_split_len != 2)
             {
-                set_error_log(config, (_i+1), config_file_name, "Must be ':' separated"); 
+                set_error_log( &(config->error_log), (_i+1), config_file_name, "Must be ':' separated"); 
                 free_split_text(split_by_colon, colon_split_len);
+                error_found = 1; 
             }
 
             //consider the part before ':' as the key and the part after ':' as the value
@@ -77,7 +79,8 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     else
                     {
                         strcpy(config->md_file_path, "\0");
-                        set_error_log(config, (_i+1), config_file_name, "Invalid metadata file name"); 
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid metadata file name"); 
+                        error_found = 1; 
                     }
                     free_split_text(split_file_name, file_name_len); 
                     break;
@@ -86,7 +89,8 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     if(val <=0 || val >= INT_MAX || *temp != '\0')
                     {
                        val = 0; 
-                       set_error_log(config, (_i+1), config_file_name, "Invalid monitor display time"); 
+                       set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid monitor display time"); 
+                       error_found = 1; 
                     }
                     config->monitor_display_time = (int)val; 
                     break;
@@ -95,7 +99,8 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     if(val <=0 || val >= INT_MAX || *temp != '\0')
                     {
                         val = 0; 
-                        set_error_log(config, (_i+1), config_file_name, "Invalid processor cycle time"); 
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid processor cycle time"); 
+                        error_found = 1; 
                     }
                     config->processor_cycle_time =(int) val; 
                     break;
@@ -104,7 +109,8 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     if(val <=0 || val >= INT_MAX || *temp != '\0')
                     {
                         val = 0;
-                        set_error_log(config, (_i+1), config_file_name, "Invalid scanner cycle time"); 
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid scanner cycle time"); 
+                        error_found = 1; 
                     }
                     config->scanner_cycle_time = (int)val; 
                     break;
@@ -114,7 +120,8 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     if(val <=0 || val >= INT_MAX || *temp != '\0')
                     {
                         val = 0;
-                        set_error_log(config, (_i+1), config_file_name, "Invalid hard drive cycle time"); 
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid hard drive cycle time"); 
+                        error_found = 1; 
                     }
                     config->hard_drive_cycle_time = (int)val; 
                     break;
@@ -123,7 +130,8 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     if(val <=0 || val >= INT_MAX || *temp != '\0')
                     {
                         val = 0;
-                        set_error_log(config, (_i+1), config_file_name, "Invalid keyboard cycle time"); 
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid keyboard cycle time"); 
+                        error_found = 1; 
                     }
                     config->keyboard_cycle_time = (int)val; 
                     break;
@@ -132,7 +140,8 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     if(val <=0 || val >= INT_MAX || *temp != '\0')
                     {
                         val = 0;
-                        set_error_log(config, (_i+1), config_file_name, "Invalid memory cycle time"); 
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid memory cycle time"); 
+                        error_found = 1; 
                     }
                     config->memory_cycle_time = (int)val;
                     break;
@@ -141,7 +150,8 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     if(val <=0 || val >= INT_MAX || *temp != '\0')
                     {
                         val = 0;
-                        set_error_log(config, (_i+1), config_file_name, "Invalid projector cycle time"); 
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid projector cycle time"); 
+                        error_found = 1; 
                     }
                     config->projector_cycle_time = (int)val; 
                     break;
@@ -155,8 +165,9 @@ int construct_configuration(Configuration* config, char* config_file_name)
                         config->log_target = LOGMODE_FILE;
                     else
                     {
-                       config->log_target = LOGMODE_MONITOR;
-                       set_error_log(config, (_i+1), config_file_name, "Invalid log target provided, will log to Monitor"); 
+                        config->log_target = LOGMODE_MONITOR;
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid log target provided, will log to Monitor"); 
+                        error_found = 1; 
                     }    
                 break;
                 case 11://Log file 
@@ -166,26 +177,29 @@ int construct_configuration(Configuration* config, char* config_file_name)
                         strcpy(config->log_file_path, value);
                     else
                     {
-                       config->log_target = LOGMODE_MONITOR;
-                       strcpy(config->log_file_path, "\0");
-                       set_error_log(config, (_i+1), config_file_name, "Invalid log file name provided, will log to monitor"); 
+                        config->log_target = LOGMODE_MONITOR;
+                        strcpy(config->log_file_path, "\0");
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid log file name provided, will log to monitor"); 
+                        error_found = 1; 
                     }
                     free_split_text(split_file_name, file_name_len); 
                 break;
                 default://key couldn't be found in list of keys
-                    set_error_log(config, (_i+1), config_file_name, "Not a valid key"); 
+                    set_error_log(&(config->error_log), (_i+1), config_file_name, "Not a valid key"); 
+                    error_found = 1; 
             }
            //printf("%s\n",split_by_colon[1]);      
           // free_split_text(split_by_colon,colon_split_len );
         }
         free_split_text(split_by_new_line, config_len);
-        return 1;
     }
     else
     {
-        set_error_log(config, 0, config_file_name, "Configuration file is empty"); 
-        return -1;
+        set_error_log(&(config->error_log), 0, config_file_name, "Configuration file is empty"); 
+        error_found = 1; 
     }   
+    
+    return error_found;
 }
 
 
@@ -194,7 +208,6 @@ void print_config_cycles(Configuration* config)
     char buffer[512]; 
     if(strlen(config->md_file_path) == 0)
     {
-        config->error_flag = 0;
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
         return;
     }
@@ -206,7 +219,6 @@ void print_config_cycles(Configuration* config)
     else
     {
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
-        config->error_flag = 0;
         return;
     } 
     
@@ -218,7 +230,6 @@ void print_config_cycles(Configuration* config)
     else
     {
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
-        config->error_flag = 0;
         return;
     } 
     
@@ -231,7 +242,6 @@ void print_config_cycles(Configuration* config)
     else
     {
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
-        config->error_flag = 0;
         return;
     } 
     
@@ -243,7 +253,6 @@ void print_config_cycles(Configuration* config)
     else
     {
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
-        config->error_flag = 0;
         return;
     } 
     
@@ -255,7 +264,6 @@ void print_config_cycles(Configuration* config)
     else
     {
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
-        config->error_flag = 0;
         return;
     } 
     
@@ -267,7 +275,6 @@ void print_config_cycles(Configuration* config)
     else
     {
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
-        config->error_flag = 0;
         return;
     } 
     
@@ -279,7 +286,6 @@ void print_config_cycles(Configuration* config)
     else
     {
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
-        config->error_flag = 0;
         return;
     } 
 
@@ -308,7 +314,7 @@ void print_config(Configuration* config)
         log_to(config->log_target, buffer, config->log_file_path); 
     }
     // report any outstanding error message
-    if(config->error_flag)
+    if(!config->error_log.consumed)
         print_log_message(config->log_target, config->log_file_path, &config->error_log);
 } 
 
@@ -325,14 +331,4 @@ int get_matching_key_index(char* tag)
     return -1;
 }
 
-void set_error_log(Configuration* config, int line_number, char* associated_file_name, char* log_text)
-{
-    if(!config->error_flag)
-    {
-        config->error_flag = 1;
-        config->error_log.type = LOGTYPE_ERROR;
-        config->error_log.line_number = line_number;
-        strcpy(config->error_log.associated_file_name, associated_file_name);
-        strcpy(config->error_log.log_text, log_text);
-    }
-}
+

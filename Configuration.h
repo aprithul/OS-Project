@@ -16,14 +16,12 @@ typedef struct
     unsigned int projector_cycle_time;
     LogMode log_target; 
     char log_file_path[256];
-   
-    char error_flag; 
     LogMessage error_log;
+    char constructed;
 }Configuration;
 
 void print_config(Configuration* config);
 void print_config_cycles(Configuration* config);
 int construct_configuration(Configuration* config, char* config_file_name);
 int get_matching_key_index(char* key);
-void set_error_log(Configuration* config, int line_number, char* error_in_file, char* log_text);
 #endif

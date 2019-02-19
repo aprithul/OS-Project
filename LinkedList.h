@@ -26,6 +26,9 @@ void ll_append(LinkedList* linked_list, Node* node);
 int ll_insert_at(LinkedList* linked_list, int index, Node* node);
 int ll_remove_at(LinkedList* linked_list, int index);
 Node* ll_get(LinkedList* linked_list, int index);
+void ll_remove(LinkedList* linked_list);
+
+
 //void ll_print(LinkedList* linked_list);
 
 // end of linked list declaration for type 'float'

@@ -5,9 +5,5 @@
 #include <stdio.h>
 
 
-char* strip(char* str);
-char* make_singly_spaced(char* str);
-char** split(const char* str_a, const char* del, int* length);
-void free_split_text(char** split_text, int length);
-int char_in_del(const char* del, char c);
+
 #endif

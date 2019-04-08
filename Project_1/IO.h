@@ -4,10 +4,17 @@
 #include <stdlib.h>
 #include "Timer.h"
 #include "PCB.h"
+#include "Resource.h"
 
- 
-pthread_t start_input_thread(TimerArgs* t_args, PCB* pcb);
-pthread_t start_output_thread(TimerArgs* t_args, PCB* pcb);
-void* input_thread(void* i_args);
-void* output_thread(void* i_args);
+extern Resources resources;
+
+pthread_t start_input_thread(TimerArgs* t_args, char* resource_name);
+pthread_t start_output_thread(TimerArgs* t_args, char* resource_name);
+
+void* hdd_input_thread(void* i_args);
+void* keyboard_input_thread(void* i_args);
+void* scanner_input_thread(void* i_args);
+void* hdd_output_thread(void* i_args);
+void* monitor_output_thread(void* i_args);
+void* projector_output_thread(void* i_args);
 #endif

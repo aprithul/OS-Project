@@ -9,6 +9,7 @@
 #include "Configuration.h"
 #include "Memory.h"
 #include "IO.h"
+#include "Resource.h"
 
 //j#define to_string(node) ((char*)(node->value))
 //LinkedListmdb* construct_metadata(char* meta_data_text);
@@ -21,7 +22,7 @@ Configuration config;
 void execute_program(MetaData* metadata);
 double simulator_start_time;
 
-
+Resources resources;
 int main(int argc, char *argv[])
 {
     //TimerArgs t_args;
@@ -58,13 +59,13 @@ int main(int argc, char *argv[])
 
         free_split_text(split_text,len); 
        
-         
         int error_code = construct_configuration(&config,config_file_name);
-        //if(error_code>=0)//-1 means fatal error
-        //    print_config(&config); // logs config file
+        if(error_code>=0)//-1 means fatal error
+            print_config(&config); // logs config file
         
         if(error_code == 0) // if there was no error in configuration file, read metadata file
         {
+            initialize_resource_manager(&resources, 4, 2);
             config.constructed = 1; 
             MetaData metadata;
             error_code = construct_metadata(&metadata,config.md_file_path);
@@ -170,10 +171,13 @@ void execute_program(MetaData* md)
                 {
                         s_t = get_current_time() - simulator_start_time; 
                         sprintf(message_buffer, "%f - Process %d: start %s input", mic_to_sec(s_t), pcb->pid, descriptors[mdr->descriptor_id]);
+                        if(!strcmp(descriptors[mdr->descriptor_id],"hard drive"))
+                            sprintf(message_buffer, "%s on HDD %d", message_buffer, ((resources.hdd_count)++)%(resources.hdd_max_count));
+
                         log_with_config(message_buffer);
 
                         pcb->process_state = WAITING;
-                        pthread_join(start_input_thread(&t_args, pcb),NULL);// start an input thread
+                        pthread_join(start_input_thread(&t_args, descriptors[mdr->descriptor_id]),NULL);// start an input thread
                         pcb->process_state = RUNNING;
 
                         sprintf(message_buffer, "%f - Process %d: end %s input", mic_to_sec(e_t), pcb->pid, descriptors[mdr->descriptor_id]);
@@ -185,10 +189,18 @@ void execute_program(MetaData* md)
                 {
                     s_t = get_current_time() - simulator_start_time; 
                     sprintf(message_buffer, "%f - Process %d: start %s output", mic_to_sec(get_current_time() - simulator_start_time), pcb->pid, descriptors[mdr->descriptor_id]);
+                    if(!strcmp(descriptors[mdr->descriptor_id],"hard drive"))
+                            sprintf(message_buffer, "%s on HDD %d", message_buffer, ((resources.hdd_count)++)%(resources.hdd_max_count));
+                    else if(!strcmp(descriptors[mdr->descriptor_id],"projector"))
+                            sprintf(message_buffer, "%s on PROJ %d", message_buffer, ((resources.projector_count)++)%(resources.projector_max_count));
+
+
+
+
                     log_with_config(message_buffer);
                     
                     pcb->process_state = WAITING;
-                    pthread_join(start_output_thread(&t_args, pcb),NULL); // start an output thread
+                    pthread_join(start_output_thread(&t_args, descriptors[mdr->descriptor_id]),NULL); // start an output thread
                     pcb->process_state = RUNNING;
 
                     sprintf(message_buffer, "%f - Process %d: end %s output", mic_to_sec(get_current_time() - simulator_start_time), pcb->pid, descriptors[mdr->descriptor_id]);
@@ -227,7 +239,7 @@ void execute_program(MetaData* md)
                         allocate_memory(&t_args, &address, 0);
                         pcb->process_state = RUNNING;
 
-                        sprintf(message_buffer, "%f - Process %d: memory allocated at %#010x", mic_to_sec(get_current_time() - simulator_start_time), pcb->pid, address);
+                        sprintf(message_buffer, "%f - Process %d: memory allocated at 0x%08x", mic_to_sec(get_current_time() - simulator_start_time), pcb->pid, address);
                         log_with_config(message_buffer);
                         e_t = get_current_time() - simulator_start_time;
                        // printf("Error : %f ms\n", (e_t-s_t-t_args.duration)/1000.f);

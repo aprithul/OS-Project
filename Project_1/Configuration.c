@@ -24,12 +24,17 @@ char* configuration_keys[] = {
                             "System memory {kbytes}",
                             "System memory {Mbytes}",
                             "System memory {Gbytes}",
+                            "Memory block size {kbytes}",
+                            "Memory block size {Mbytes}",
+                            "Memory block size {Gbytes}",
+                            "Projector quantity",
+                            "Hard drive quantity",
                             "End Simulator Configuration File"
                            };
 
 // component flag has following order
 //  {empty} , version, filep path, monitor, processor, scanner, hard drive, keyboard, memory, projector, log, log file path
-int component_flag[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int component_flag[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
 // construct_configuration Error codes:
@@ -59,7 +64,7 @@ int construct_configuration(Configuration* config, char* config_file_name)
             error_code = -1;
             _i = 0;
         }
-        if( strcmp(strip(split_by_new_line[_end]),configuration_keys[15]))
+        if( strcmp(strip(split_by_new_line[_end]),configuration_keys[20]))
         {
             log_detailed_to(LOGMODE_MONITOR,LOGTYPE_ERROR, 0,config_file_name,"No End Simulator Statement in config file, exiting", NULL);
             error_code = -1;
@@ -235,7 +240,10 @@ int construct_configuration(Configuration* config, char* config_file_name)
                         val = 0;
                         set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid memory size"); 
                         error_code = 1; 
-                    }
+                        component_flag[key_index]   = -1;
+                        component_flag[key_index+1] = -1;
+                        component_flag[key_index+2] = -1;
+                   }
                     else
                     {
                         config->allocated_memory_size = val;
@@ -252,6 +260,10 @@ int construct_configuration(Configuration* config, char* config_file_name)
                         val = 0;
                         set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid memory size"); 
                         error_code = 1; 
+                        component_flag[key_index-1] = -1;
+                        component_flag[key_index]   = -1;
+                        component_flag[key_index+1] = -1;
+ 
                     }
                     else
                     {
@@ -267,8 +279,11 @@ int construct_configuration(Configuration* config, char* config_file_name)
                     if(val <=0 || val >= INT_MAX || *temp != '\0')
                     {
                         val = 0;
-                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid memory cycle time"); 
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid memory size"); 
                         error_code = 1; 
+                        component_flag[key_index]   = -1;
+                        component_flag[key_index-1] = -1;
+                        component_flag[key_index-2] = -1;
                     }
                     else
                     {
@@ -279,8 +294,102 @@ int construct_configuration(Configuration* config, char* config_file_name)
                         component_flag[key_index-2] = 1;
                     }
                 break;
-                default://key couldn't be found in list of keys
- //                   printf("%s\n", value);
+                case 15://memory block size in kb
+                    val = strtol(value, &temp, 10);
+                    if(val <=0 || val >= INT_MAX || *temp != '\0')
+                    {
+                        val = 0;
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid memory block size"); 
+                        error_code = 1; 
+                        component_flag[key_index]   = -1;
+                        component_flag[key_index+1] = -1;
+                        component_flag[key_index+2] = -1;
+ 
+                    }
+                    else
+                    {
+                        config->memory_block_size = val;
+                        component_flag[key_index]   = 1;
+                        component_flag[key_index+1] = 1;
+                        component_flag[key_index+2] = 1;
+                    }
+                    
+                break;
+                case 16://memory block size in mb
+                    val = strtol(value, &temp, 10);
+                    if(val <=0 || val >= INT_MAX || *temp != '\0')
+                    {
+                        val = 0;
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid Memory block size"); 
+                        error_code = 1; 
+                        component_flag[key_index-1] = -1;
+                        component_flag[key_index]   = -1;
+                        component_flag[key_index+1] = -1;
+ 
+                    }
+                    else
+                    {
+                        val *= 1024;
+                        config->memory_block_size = val;
+                        component_flag[key_index-1] = 1;
+                        component_flag[key_index]   = 1;
+                        component_flag[key_index+1] = 1;
+                    }
+                break;
+                case 17://memory block size in gb
+                    val = strtol(value, &temp, 10);
+                    if(val <=0 || val >= INT_MAX || *temp != '\0')
+                    {
+                        val = 0;
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid memory block size"); 
+                        error_code = 1; 
+                        component_flag[key_index]   = -1;
+                        component_flag[key_index-1] = -1;
+                        component_flag[key_index-2] = -1;
+ 
+                    }
+                    else
+                    {
+                        val *= 1024*1024;
+                        config->memory_block_size = val;
+                        component_flag[key_index]   = 1;
+                        component_flag[key_index-1] = 1;
+                        component_flag[key_index-2] = 1;
+                    }
+                break;
+                case 18://
+                    val = strtol(value, &temp, 10);
+                    if(val<=0 || val >= INT_MAX || *temp != '\0')
+                    {
+                        val = 0;
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid projector count");
+                        error_code = 1; 
+                        component_flag[key_index] = -1;
+                    }
+                    else
+                    {
+                        config->projector_count = val;
+                        component_flag[key_index] = 1;
+                    }
+                break;        
+                case 19://
+                    val = strtol(value, &temp, 10);
+                    if(val<=0 || val >= INT_MAX || *temp != '\0')
+                    {
+                        val = 0;
+                        set_error_log(&(config->error_log), (_i+1), config_file_name, "Invalid hard drive count");
+                        error_code = 1; 
+                        component_flag[key_index] = -1;
+                    }
+                    else
+                    {
+                        config->hard_drive_count = val;
+                        component_flag[key_index] = 1;
+                    }
+                break; 
+                default:
+                    //key couldn't be found in list of keys
+ //                 printf("%s\n", value);
                     set_error_log(&(config->error_log), (_i+1), config_file_name, "Parsing error, check configuration file"); 
                     error_code = 1; 
             }
@@ -311,6 +420,30 @@ int construct_configuration(Configuration* config, char* config_file_name)
         {
             log_detailed_to(config->log_target,LOGTYPE_ERROR, 0, config_file_name, "Meta-Data file path not found", config->log_file_path);
             error_code = -1;
+        }
+        else if(component_flag[12] == 0)
+        {
+            log_detailed_to(config->log_target,LOGTYPE_ERROR, 0, config_file_name, "No system memory size specified in configuration file", config->log_file_path);
+            error_code = -1;
+        }
+        else if(component_flag[15] == 0)
+        {
+            log_detailed_to(config->log_target,LOGTYPE_ERROR, 0, config_file_name, "No memory block size specified in configuration file", config->log_file_path);
+            error_code = -1;
+        }
+        else if(config->allocated_memory_size >0 && config->memory_block_size>0 && config->allocated_memory_size < config->memory_block_size) //memory block size bigger than total memory
+        {
+            log_detailed_to(config->log_target,LOGTYPE_ERROR, 0, config_file_name, "Memory block size can't be bigger than total allocation", config->log_file_path);
+            error_code = -1;
+        }
+        else if(component_flag[18] == 0) // no projector count specified
+        {
+            log_detailed_to(config->log_target,LOGTYPE_ERROR, 0, config_file_name, "No valid Projector count specified in configuration file", config->log_file_path);
+            error_code = -1;
+        }
+        else if(component_flag[19] == 0) // no hdd count specified
+        {
+            log_detailed_to(config->log_target,LOGTYPE_ERROR, 0, config_file_name, "No valid Hard disk count specified in configuration file", config->log_file_path);
         }
     }
     else
@@ -503,7 +636,7 @@ void print_config(Configuration* config)
 int get_matching_key_index(char* tag)
 {
     int _i = 1;
-    for( ; _i<15; _i++)
+    for( ; _i<20; _i++)
     {
         if(!strcmp(tag,configuration_keys[_i]))
             return _i; 

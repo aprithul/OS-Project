@@ -16,6 +16,9 @@ typedef struct
     unsigned int memory_cycle_time;
     unsigned int projector_cycle_time;
     unsigned int allocated_memory_size;
+    unsigned int memory_block_size;
+    unsigned int hard_drive_count;
+    unsigned int projector_count;
     LogMode log_target; 
     char log_file_path[256];
     LogMessage error_log;

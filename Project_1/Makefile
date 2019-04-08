@@ -1,5 +1,5 @@
-sim_1: Simulator.o MetaData.o LinkedList.o Utils.o Logger.o Configuration.o Timer.o IO.o Memory.o
-	gcc Simulator.o MetaData.o LinkedList.o Utils.o Logger.o Configuration.o Timer.o IO.o Memory.o -pthread -o sim_1
+sim_1: Simulator.o MetaData.o LinkedList.o Utils.o Logger.o Configuration.o Timer.o IO.o Memory.o Resource.o
+	gcc Simulator.o MetaData.o LinkedList.o Utils.o Logger.o Configuration.o Timer.o IO.o Memory.o Resource.o -pthread -lpthread -o sim_1
 
 Simulator.o: Simulator.c
 	gcc -c Simulator.c
@@ -27,6 +27,9 @@ IO.o: IO.c IO.h
 
 Memory.o: Memory.c Memory.h
 	gcc -c Memory.c
+
+Resource.o: Resource.c Resource.h
+	gcc -c Resource.c
 
 clean:
 	rm *.o sim_1

@@ -1,0 +1,25 @@
+Instructions for running the programming:
+    - extract zip file
+    - open terminal in project directory
+    - enter the following commands 
+        make
+        ./sim_1 <config file name>
+    - example config_1.conf and Test_1a.mdf are provided in the project directory 
+
+Note: Only file names without any space in between, separated by a single '.' and having appropriate extension is a valid file name
+
+
+.......................................................................................................
+    - The simulator can now do Round Robin and Shortest Remaining Time scheduling.
+    - Since control flow is very different compared to non preemptive scheduling algorithms of the previous lab, this project uses two distinct simulator execution funct   
+    - RR runs for quantum amount of ms before it gets interrupted. Any remaining processing time is carried over to next round. 
+    - SR runs until a new process enters queue having lower remaining time.
+.......................................................................................................
+Architectural Development:
+    - PCBs for the processess held in the pcbs arary in <Simulator.c, Line 27>
+    - interrupted flag is set to 1 when an interrupt occurs <Simulator.c, Line 37> 
+    - start_process_loader() function called in a seperate thread to load the metadata file 5 times in a row with 100ms intervals in between. Processess are pushed into process_queue once they arrive  <Simulator.c, Line 25, 807>
+    - execute_program_rr() runs simulator with round robin scheduling while execute_program_srt runs it with shortest remaining time scheduling <Simulator.c Line 494, 198>
+    - execute_program_srt() runs with shortest remaining time schulding algorithm. It checks the remaining time for the available processess and finds the one with the shortest remaining time <Simulator.c Line 139-153>
+    - MetaData.c modified to accomodate for the shceudlign algorithms <MetaData.c Line 29-33> 
+    - Configuration.c modified to accomodate for the scheduling algorithms <Configuration.c Line 412-415> 

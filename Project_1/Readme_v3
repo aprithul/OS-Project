@@ -1,0 +1,25 @@
+Instructions for running the programming:
+    - extract zip file
+    - open terminal in project directory
+    - enter the following commands 
+        make
+        ./sim_1 <config file name>
+    - example config_1.conf and Test_1a.mdf are provided in the project directory 
+
+Note: Only file names without any space in between, separated by a single '.' and having appropriate extension is a valid file name
+
+
+.......................................................................................................
+For project 3, I built upon previous work in following ways:
+    - Projector and Hard Disk resources are synchronised using sempahores ( since they can have more than one instance )
+    - All other resources synchronised using mutex
+    - Memory allocated according to block size
+    - Proper error handling for newly added features
+
+    
+......................................................................................................
+Architecture Development:  
+    - Resource.h contains declaration for Resources struct. Resources holds all mutex and semaphores as well as hdd and projector count
+    - IO.c modified to incorporate synchronization. All output and input componenets now have their specific threads with proper mutex/semaphores. see line 9-16, 22-29, 35-42, 49-56, 62-69, 75-82 of file: IO.c to see mutex/semaphores implementation.
+    - Memory.c modified so that memory address isn't assigned randomly but starting from 0x0 and incremented by block size. If allocation would exceed system memory, new allocation is done from address 0x0.
+
